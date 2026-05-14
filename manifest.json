@@ -1,0 +1,13 @@
+{
+  "name": "AnimeVault",
+  "short_name": "AnimeVault",
+  "description": "个人动漫收藏追踪与周边管理",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#15181e",
+  "theme_color": "#15181e",
+  "icons": [
+    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%2315181e'/%3E%3Crect x='38' y='38' width='116' height='116' rx='16' fill='%23ffffff'/%3E%3Cpath d='M70 62h26l32 68h-24l-5-13H70l-5 13H42l28-68zm7 38h16l-8-21-8 21zm56-38h23l-29 68h-23l29-68z' fill='%2315181e'/%3E%3C/svg%3E", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%2315181e'/%3E%3Crect x='104' y='104' width='304' height='304' rx='40' fill='%23ffffff'/%3E%3Cpath d='M185 165h70l86 182h-65l-14-36h-76l-14 36h-62l75-182zm18 102h43l-21-57-22 57zm151-102h61l-78 182h-61l78-182z' fill='%2315181e'/%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}
