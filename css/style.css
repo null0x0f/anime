@@ -1155,7 +1155,7 @@ textarea.input{min-height:72px;resize:vertical}
 
 /* ===== Login Page ===== */
 .login-page{
-  --login-jump-bg:url("../uploads/1778720945627-agb3i0.png");
+  --login-jump-bg:url("../uploads/back.png");
   position:relative;
   display:flex;
   min-height:100vh;
