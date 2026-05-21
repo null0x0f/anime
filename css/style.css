@@ -75,6 +75,27 @@
   --shadow:var(--mds-shadow-whisper);
 }
 
+[data-theme="dark"]{
+  --mds-color-foreground-primary:#efeff1;
+  --mds-color-foreground-secondary:#c8cad0;
+  --mds-color-foreground-muted:#8c929d;
+  --mds-color-border:#2e3138;
+  --mds-color-border-strong:#3d4149;
+  --bg-primary:#0d0e12;
+  --bg-secondary:#15181e;
+  --bg-card:#1a1d24;
+  --bg-card-hover:#21242c;
+  --bg-input:#15181e;
+  --text-primary:#efeff1;
+  --text-secondary:#c8cad0;
+  --text-muted:#8c929d;
+  --border:rgba(178,182,189,.14);
+  --border-hover:rgba(178,182,189,.28);
+  --shadow:rgba(0,0,0,.2) 0 1px 2px,rgba(0,0,0,.15) 0 2px 4px;
+  --mds-shadow-whisper:rgba(0,0,0,.2) 0 1px 2px,rgba(0,0,0,.15) 0 2px 4px;
+  color-scheme:dark;
+}
+
 html{font-size:16px;scroll-behavior:smooth}
 body{
   min-height:100vh;
@@ -1480,3 +1501,170 @@ textarea.input{min-height:72px;resize:vertical}
   #toast-container{right:14px;bottom:14px;left:14px}
   .toast{min-width:0}
 }
+
+/* ===== Watching Progress Card ===== */
+.watching-list{display:flex;flex-direction:column;gap:12px}
+.watching-card{
+  display:flex;align-items:center;gap:16px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:12px 16px;
+  cursor:pointer;transition:border-color var(--transition);
+}
+.watching-card:hover{border-color:rgba(123,66,188,.5)}
+.watching-card-img{width:48px;height:64px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0}
+.watching-card-info{flex:1;min-width:0}
+.watching-card-title{font-size:.9375rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.watching-card-progress{display:flex;align-items:center;gap:10px}
+.progress-bar-container{flex:1;height:6px;background:rgba(178,182,189,.22);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--mds-color-terraform),var(--mds-color-waypoint));border-radius:3px;transition:width .4s ease;min-width:2px}
+.progress-text{font-size:.8125rem;color:var(--mds-color-foreground-muted);white-space:nowrap;font-weight:600}
+.btn-ep-plus{
+  background:var(--bg-card);color:var(--mds-color-terraform);
+  border:1px solid var(--mds-color-terraform);padding:6px 12px;
+  border-radius:var(--radius-sm);font-weight:700;font-size:.8125rem;
+  cursor:pointer;transition:all var(--transition);flex-shrink:0;
+}
+.btn-ep-plus:hover{background:rgba(123,66,188,.1);box-shadow:0 0 8px rgba(123,66,188,.2)}
+
+/* ===== Episode Stepper ===== */
+.episode-stepper{display:flex;align-items:center;gap:12px}
+.ep-display{font-size:1.1rem;font-weight:700;color:var(--mds-color-foreground-on-dark);min-width:60px;text-align:center}
+
+/* ===== Genre Bar Chart ===== */
+.genre-bar-chart{display:flex;flex-direction:column;gap:10px;max-width:500px}
+.genre-bar-row{display:flex;align-items:center;gap:12px}
+.genre-bar-label{width:80px;font-size:.8125rem;color:var(--mds-color-foreground-muted);text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.genre-bar-track{flex:1;height:8px;background:rgba(178,182,189,.18);border-radius:4px;overflow:hidden}
+.genre-bar-fill{height:100%;background:linear-gradient(90deg,var(--mds-color-terraform),var(--mds-color-waypoint));border-radius:4px;transition:width .5s ease;min-width:4px}
+.genre-bar-count{font-size:.8125rem;color:var(--mds-color-foreground-muted);width:24px;font-weight:600}
+
+/* ===== Batch Action Bar ===== */
+.batch-bar{
+  position:fixed;bottom:0;left:var(--sidebar-w);right:0;
+  background:#fff;border-top:2px solid var(--mds-color-terraform);
+  padding:16px 32px;display:flex;align-items:center;gap:12px;
+  z-index:80;box-shadow:0 -4px 20px rgba(0,0,0,.08);
+}
+.batch-bar span{color:var(--mds-color-foreground-secondary);font-size:.9rem;margin-right:auto;font-weight:600}
+
+/* ===== Card Checkbox ===== */
+.card-checkbox{position:absolute;top:8px;left:8px;z-index:5;width:20px;height:20px;accent-color:var(--mds-color-terraform);cursor:pointer}
+.anime-card.selectable{position:relative}
+
+/* ===== Explore Section ===== */
+.explore-section{margin-bottom:8px}
+.explore-results{margin-bottom:32px}
+
+/* ===== Toolbar enhancements ===== */
+.toolbar-right{display:flex;align-items:center;gap:12px}
+
+/* ===== Color Picker ===== */
+.color-picker-row{display:flex;gap:8px;flex-wrap:wrap}
+.color-dot{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all var(--transition)}
+.color-dot:hover{transform:scale(1.15)}
+.color-dot.active{border-color:var(--mds-color-foreground-primary);box-shadow:0 0 0 2px var(--bg-primary)}
+
+/* ===== Tag Management ===== */
+.tag-manage-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.tag-manage-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-md)}
+.tag-manage-actions{display:flex;gap:8px}
+.text-muted{color:var(--mds-color-foreground-muted);font-size:.9rem}
+
+/* ===== Responsive additions ===== */
+@media(max-width:768px){
+  .batch-bar{left:0;padding:12px 16px;flex-wrap:wrap}
+  .toolbar-right{flex-wrap:wrap}
+  .watching-card{padding:10px 12px;gap:10px}
+}
+
+/* ===== Dark Mode Component Overrides ===== */
+[data-theme="dark"] .filter-tab{background:var(--bg-card);color:var(--text-secondary);border-color:var(--border)}
+[data-theme="dark"] .filter-tab:hover{border-color:var(--border-hover);color:var(--text-primary)}
+[data-theme="dark"] .filter-tab.active{background:var(--mds-color-surface-dark);color:var(--mds-color-foreground-on-dark);border-color:rgba(178,182,189,.3)}
+[data-theme="dark"] .settings-card,[data-theme="dark"] .chart-container,[data-theme="dark"] .calendar-day{background:var(--bg-card);border-color:var(--border)}
+[data-theme="dark"] .settings-card:hover{background:var(--bg-card-hover)}
+[data-theme="dark"] .stat-icon{background:rgba(255,255,255,.06);border-color:var(--border)}
+[data-theme="dark"] .modal-content{background:var(--bg-card);border-color:var(--border)}
+[data-theme="dark"] .modal-content h2{color:var(--text-primary)}
+[data-theme="dark"] .btn-ghost{background:var(--bg-card);color:var(--text-secondary);border-color:var(--border)}
+[data-theme="dark"] .btn-ghost:hover{background:var(--bg-card-hover);color:var(--text-primary);border-color:var(--border-hover)}
+[data-theme="dark"] .timeline-item{background:var(--bg-card);border-color:var(--border)}
+[data-theme="dark"] .timeline-item:hover{background:var(--bg-card-hover)}
+[data-theme="dark"] .roi-item{background:rgba(255,255,255,.04);border-color:var(--border)}
+[data-theme="dark"] .calendar-show{background:rgba(255,255,255,.04);border-color:var(--border)}
+[data-theme="dark"] .calendar-show:hover{background:rgba(255,255,255,.08)}
+[data-theme="dark"] .tag{background:rgba(255,255,255,.06)}
+[data-theme="dark"] .search-input,[data-theme="dark"] .input{background:var(--bg-input);color:var(--text-primary);border-color:var(--border)}
+[data-theme="dark"] .search-input:focus,[data-theme="dark"] .input:focus{border-color:var(--mds-color-focus-action-external)}
+[data-theme="dark"] ::-webkit-scrollbar-thumb{background:#3d4149}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover{background:#52575e}
+[data-theme="dark"] .batch-bar{background:var(--bg-card);border-top-color:var(--mds-color-terraform)}
+[data-theme="dark"] .watching-card{background:var(--bg-card);border-color:var(--border)}
+
+/* ===== Scroll to Top ===== */
+.scroll-top-btn{
+  position:fixed;bottom:28px;right:28px;z-index:80;
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--bg-card);color:var(--text-secondary);
+  box-shadow:0 4px 16px rgba(0,0,0,.12);
+  cursor:pointer;display:none;place-items:center;
+  transition:all .25s ease;
+}
+.scroll-top-btn.visible{display:grid}
+.scroll-top-btn:hover{background:var(--mds-color-terraform);color:#fff;border-color:transparent;transform:translateY(-2px)}
+.scroll-top-btn svg{width:20px;height:20px}
+
+/* ===== Nav Badge ===== */
+.nav-badge{
+  margin-left:auto;min-width:22px;height:20px;padding:0 6px;
+  border-radius:10px;background:rgba(123,66,188,.3);
+  color:#dcbcff;font-size:.6875rem;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;
+  line-height:1;
+}
+
+/* ===== Random Picker Card ===== */
+.random-picker{
+  display:flex;align-items:center;gap:16px;padding:16px 20px;
+  background:linear-gradient(135deg,rgba(123,66,188,.08),rgba(20,198,203,.08));
+  border:1px solid rgba(123,66,188,.2);border-radius:var(--radius-lg);
+  margin-bottom:24px;
+}
+.random-picker-text{flex:1;min-width:0}
+.random-picker-text h3{font-size:.9375rem;margin-bottom:4px}
+.random-picker-text p{font-size:.8125rem;color:var(--mds-color-foreground-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.random-picker .btn{flex-shrink:0}
+.random-result{
+  display:flex;gap:14px;align-items:center;padding:14px;
+  border:1px solid rgba(123,66,188,.25);border-radius:var(--radius-lg);
+  background:rgba(123,66,188,.06);margin-top:12px;cursor:pointer;
+  transition:border-color var(--transition);
+}
+.random-result:hover{border-color:rgba(123,66,188,.5)}
+.random-result img{width:48px;height:64px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0}
+.random-result-info{flex:1;min-width:0}
+.random-result-info h4{font-size:.9rem;font-weight:700;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.random-result-info p{font-size:.8125rem;color:var(--mds-color-foreground-muted)}
+
+/* ===== Mini Progress on Anime Card ===== */
+.card-progress-mini{
+  margin-top:6px;display:flex;align-items:center;gap:6px;
+}
+.card-progress-mini .progress-bar-container{height:4px;flex:1}
+.card-progress-mini .progress-text{font-size:.6875rem}
+
+/* ===== Chinese Title Editor ===== */
+.cn-title-editor{display:flex;gap:8px;align-items:center;margin-top:4px}
+.cn-title-editor .input{min-height:32px;padding:4px 10px;font-size:.875rem;flex:1}
+
+/* ===== Merch Category Filter ===== */
+.merch-cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+
+/* ===== Theme Toggle in Sidebar ===== */
+.btn-theme{
+  display:grid;width:34px;height:34px;place-items:center;
+  border:1px solid transparent;border-radius:var(--radius-md);
+  background:transparent;color:var(--mds-color-foreground-subtle-on-dark);
+  cursor:pointer;transition:all var(--transition);
+}
+.btn-theme:hover{background:rgba(255,207,37,.16);border-color:rgba(255,207,37,.25);color:var(--mds-color-vault)}

@@ -1,6 +1,8 @@
 // ===== Settings Page =====
 App.settings = {
   async render() {
+    const tags = await App.db.getAllTags();
+    const esc = App.utils.escapeHtml;
     return `
     <div class="page-header"><h1>设置</h1><p class="subtitle">数据管理与备份</p></div>
     <div class="settings-grid">
@@ -13,6 +15,18 @@ App.settings = {
           <div class="form-group"><label>确认新密码</label><input type="password" id="confirm-password" class="input" required minlength="4" autocomplete="new-password"/></div>
           <button class="btn btn-primary" id="btn-change-password" type="submit">保存新密码</button>
         </form>
+      </div>
+      <div class="settings-card">
+        <h3>标签管理</h3>
+        <p>编辑或删除已创建的标签。</p>
+        ${tags.length ? `<div class="tag-manage-list">${tags.map(t => `
+          <div class="tag-manage-item">
+            <span class="tag" style="--tag-color:${t.color}">${esc(t.name)}</span>
+            <div class="tag-manage-actions">
+              <button class="btn btn-ghost btn-sm" onclick="App.settings.editTag('${t.id}','${esc(t.name)}','${t.color}')">编辑</button>
+              <button class="btn btn-danger btn-sm" onclick="App.settings.deleteTag('${t.id}')">删除</button>
+            </div>
+          </div>`).join('')}</div>` : '<p class="text-muted">还没有标签，在动漫详情页中创建</p>'}
       </div>
       <div class="settings-card">
         <h3>导出数据</h3>
@@ -35,8 +49,48 @@ App.settings = {
         <p>生成一张精美的收藏总结图片，可以保存或分享到社交媒体。</p>
         <button class="btn btn-primary" id="btn-share">生成卡片</button>
       </div>
-    </div>`;
+    </div>
+    <div id="tag-edit-modal" class="modal hidden"></div>`;
   },
+
+  async editTag(id, name, color) {
+    const colors = ['#7b42bc','#14c6cb','#1868f2','#ffcf25','#bb5a00','#731e25','#a737ff','#12805c'];
+    const modal = document.getElementById('tag-edit-modal') || document.createElement('div');
+    modal.id = 'tag-edit-modal';
+    modal.className = 'modal';
+    if (!modal.parentElement) document.body.appendChild(modal);
+    modal.classList.remove('hidden');
+    modal.innerHTML = `<div class="modal-overlay" onclick="this.parentElement.classList.add('hidden')"></div>
+      <div class="modal-content">
+        <h2>编辑标签</h2>
+        <div class="form-group"><label>名称</label><input type="text" id="tag-edit-name" class="input" value="${App.utils.escapeHtml(name)}"/></div>
+        <div class="form-group"><label>颜色</label>
+          <div class="color-picker-row">${colors.map(c => `<div class="color-dot ${c===color?'active':''}" style="background:${c}" data-color="${c}" onclick="document.querySelectorAll('#tag-edit-modal .color-dot').forEach(d=>d.classList.remove('active'));this.classList.add('active')"></div>`).join('')}</div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="document.getElementById('tag-edit-modal').classList.add('hidden')">取消</button>
+          <button class="btn btn-primary" onclick="App.settings.saveTag('${id}')">保存</button>
+        </div>
+      </div>`;
+  },
+
+  async saveTag(id) {
+    const name = document.getElementById('tag-edit-name')?.value?.trim();
+    if (!name) { App.toast('名称不能为空', 'error'); return; }
+    const color = document.querySelector('#tag-edit-modal .color-dot.active')?.dataset.color || '#7b42bc';
+    await App.db.updateTag(id, name, color);
+    document.getElementById('tag-edit-modal')?.classList.add('hidden');
+    App.toast('标签已更新', 'success');
+    App.router.refresh();
+  },
+
+  async deleteTag(id) {
+    if (!confirm('确定删除该标签？')) return;
+    await App.db.deleteTag(id);
+    App.toast('已删除', 'success');
+    App.router.refresh();
+  },
+
   bindEvents() {
     document.getElementById('password-form')?.addEventListener('submit', async e => {
       e.preventDefault();

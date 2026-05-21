@@ -1,7 +1,7 @@
 // ===== App Router & Init =====
 App.router = {
   routes: {
-    '/': { render: () => App.dashboard.render(), bind: () => {} },
+    '/': { render: () => App.dashboard.render(), bind: () => App.dashboard.bindEvents() },
     '/anime': { render: () => App.animeList.render(), bind: () => App.animeList.bindEvents() },
     '/merch': { render: () => App.merch.render(), bind: () => App.merch.bindEvents() },
     '/stats': { render: () => App.charts.render(), bind: () => App.charts.bindEvents() },
@@ -46,6 +46,12 @@ App.router = {
     if (userEl) userEl.textContent = username;
     document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('hidden', username !== 'admin'));
 
+    // Update theme toggle icon
+    App.theme?.updateIcon();
+
+    // Scroll to top on navigation
+    window.scrollTo(0, 0);
+
     // Render
     app.classList.add('loading');
     try {
@@ -60,6 +66,8 @@ App.router = {
         const href = l.getAttribute('href')?.slice(1);
         l.classList.toggle('active', href === hash || (hash.startsWith('/anime/') && href === '/anime'));
       });
+      // Update nav badges (async, don't block)
+      App.updateNavBadges();
     } catch (e) {
       console.error(e);
       app.innerHTML = `<div class="empty-state"><h3>加载出错</h3><p>${e.message}</p></div>`;
@@ -69,6 +77,62 @@ App.router = {
 };
 
 App.toggleSidebar = () => document.querySelector('.sidebar')?.classList.toggle('open');
+
+// ===== Nav Badge Counters =====
+App._navBadgeCache = {};
+App.updateNavBadges = async () => {
+  try {
+    if (!App.db.isLoggedIn()) return;
+    const anime = await App.db.getAllAnime();
+    const merch = await App.db.getAllMerch();
+    const watchingCount = anime.filter(a => a.status === 'watching').length;
+    const merchCount = merch.length;
+    // Anime nav badge
+    const animeLink = document.getElementById('nav-anime');
+    if (animeLink) {
+      let badge = animeLink.querySelector('.nav-badge');
+      if (watchingCount > 0) {
+        if (!badge) { badge = document.createElement('span'); badge.className = 'nav-badge'; animeLink.appendChild(badge); }
+        badge.textContent = watchingCount;
+      } else if (badge) badge.remove();
+    }
+    // Merch nav badge
+    const merchLink = document.getElementById('nav-merch');
+    if (merchLink) {
+      let badge = merchLink.querySelector('.nav-badge');
+      if (merchCount > 0) {
+        if (!badge) { badge = document.createElement('span'); badge.className = 'nav-badge'; merchLink.appendChild(badge); }
+        badge.textContent = merchCount;
+      } else if (badge) badge.remove();
+    }
+  } catch {}
+};
+
+// ===== Global Keyboard Shortcuts =====
+document.addEventListener('keydown', e => {
+  // Don't intercept when typing in inputs
+  const tag = document.activeElement?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    if (e.key === 'Escape') document.activeElement.blur();
+    return;
+  }
+
+  if (e.key === '/') {
+    e.preventDefault();
+    const searchInput = document.getElementById('anime-search') || document.getElementById('merch-search');
+    if (searchInput) searchInput.focus();
+    else App.router.go('/anime');
+  }
+  else if (e.key === 'Escape') {
+    document.querySelectorAll('.modal:not(.hidden)').forEach(m => m.classList.add('hidden'));
+  }
+});
+
+// ===== Scroll to Top button visibility =====
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scroll-top');
+  if (btn) btn.classList.toggle('visible', window.scrollY > 400);
+}, { passive: true });
 
 window.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('hashchange', () => App.router.refresh());

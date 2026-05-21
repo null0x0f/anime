@@ -84,6 +84,7 @@ const migrations = [
   'ALTER TABLE merch ADD COLUMN is_wishlist INTEGER DEFAULT 0',
   'ALTER TABLE merch ADD COLUMN target_price REAL',
   'ALTER TABLE merch ADD COLUMN tags TEXT DEFAULT "[]"',
+  'ALTER TABLE anime ADD COLUMN current_episode INTEGER DEFAULT 0',
 ];
 for (const sql of migrations) {
   try { db.exec(sql); } catch {}
@@ -196,7 +197,8 @@ function rowToAnime(r) {
     status: r.status, userRating: r.user_rating, userNotes: r.user_notes,
     addedAt: r.added_at, updatedAt: r.updated_at,
     watchStart: r.watch_start, watchEnd: r.watch_end,
-    airingDay: r.airing_day, tags: r.tags ? JSON.parse(r.tags) : [] };
+    airingDay: r.airing_day, tags: r.tags ? JSON.parse(r.tags) : [],
+    currentEpisode: r.current_episode || 0 };
 }
 
 app.get('/api/anime', auth, (req, res) => {
@@ -211,20 +213,20 @@ app.get('/api/anime/:malId', auth, (req, res) => {
 app.put('/api/anime/:malId', auth, (req, res) => {
   const a = req.body;
   db.prepare(`INSERT INTO anime
-    (mal_id,user_id,title,title_japanese,title_english,title_chinese,image,synopsis,score,episodes,year,genres,status,user_rating,user_notes,added_at,updated_at,watch_start,watch_end,airing_day,tags)
-    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    (mal_id,user_id,title,title_japanese,title_english,title_chinese,image,synopsis,score,episodes,year,genres,status,user_rating,user_notes,added_at,updated_at,watch_start,watch_end,airing_day,tags,current_episode)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     ON CONFLICT(mal_id,user_id) DO UPDATE SET
     title=excluded.title,title_japanese=excluded.title_japanese,title_english=excluded.title_english,
     title_chinese=excluded.title_chinese,image=excluded.image,synopsis=excluded.synopsis,score=excluded.score,episodes=excluded.episodes,
     year=excluded.year,genres=excluded.genres,status=excluded.status,user_rating=excluded.user_rating,
     user_notes=excluded.user_notes,updated_at=excluded.updated_at,watch_start=excluded.watch_start,
-    watch_end=excluded.watch_end,airing_day=excluded.airing_day,tags=excluded.tags`).run(
+    watch_end=excluded.watch_end,airing_day=excluded.airing_day,tags=excluded.tags,current_episode=excluded.current_episode`).run(
     +req.params.malId, req.userId, a.title, a.titleJapanese, a.titleEnglish,
     a.titleChinese || '', a.image, a.synopsis, a.score, a.episodes, a.year,
     JSON.stringify(a.genres || []), a.status, a.userRating || 0, a.userNotes || '',
     a.addedAt || new Date().toISOString(), a.updatedAt || new Date().toISOString(),
     a.watchStart || null, a.watchEnd || null, a.airingDay || null,
-    JSON.stringify(a.tags || [])
+    JSON.stringify(a.tags || []), a.currentEpisode || 0
   );
   res.json({ ok: true });
 });
@@ -336,8 +338,29 @@ app.post('/api/tags', auth, (req, res) => {
   res.json({ ok: true, id, name, color: color || '#7c3aed' });
 });
 
+app.put('/api/tags/:id', auth, (req, res) => {
+  const { name, color } = req.body;
+  if (!name) return res.status(400).json({ error: '标签名不能为空' });
+  db.prepare('UPDATE tags SET name=?, color=? WHERE id=? AND user_id=?').run(name, color || '#7c3aed', req.params.id, req.userId);
+  res.json({ ok: true });
+});
+
 app.delete('/api/tags/:id', auth, (req, res) => {
   db.prepare('DELETE FROM tags WHERE id=? AND user_id=?').run(req.params.id, req.userId);
+  res.json({ ok: true });
+});
+
+// Edit merch
+app.put('/api/merch/:id', auth, (req, res) => {
+  const m = req.body;
+  const existing = db.prepare('SELECT id FROM merch WHERE id=? AND user_id=?').get(req.params.id, req.userId);
+  if (!existing) return res.status(404).json({ error: '未找到' });
+  db.prepare(`UPDATE merch SET name=?, category=?, price=?, notes=?, current_value=?, is_wishlist=?, target_price=?, tags=? WHERE id=? AND user_id=?`).run(
+    m.name, m.category, parseFloat(m.price) || 0, m.notes || '',
+    parseFloat(m.currentValue) || null, m.isWishlist ? 1 : 0,
+    parseFloat(m.targetPrice) || null, typeof m.tags === 'string' ? m.tags : JSON.stringify(m.tags || []),
+    req.params.id, req.userId
+  );
   res.json({ ok: true });
 });
 

@@ -59,6 +59,8 @@ App.db = {
   async getAllTags() { return this._fetch('/api/tags'); },
   async createTag(name, color) { return this._fetch('/api/tags', { method: 'POST', body: JSON.stringify({ name, color }) }); },
   async deleteTag(id) { return this._fetch('/api/tags/' + id, { method: 'DELETE' }); },
+  async updateTag(id, name, color) { return this._fetch('/api/tags/' + id, { method: 'PUT', body: JSON.stringify({ name, color }) }); },
+  async updateMerch(id, data) { return this._fetch('/api/merch/' + id, { method: 'PUT', body: JSON.stringify(data) }); },
 
   // Export / Import / Clear
   async exportAll() { const d = await this._fetch('/api/export'); return JSON.stringify(d); },

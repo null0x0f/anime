@@ -3,6 +3,7 @@ App.merch = {
   sort: 'newest',
   search: '',
   tab: 'owned', // 'owned' | 'wishlist' | 'all'
+  catFilter: '', // '' = all, or a specific category
 
   async render() {
     let merch = await App.db.getAllMerch();
@@ -15,6 +16,9 @@ App.merch = {
       const q = this.search.toLowerCase();
       merch = merch.filter(m => (m.name||'').toLowerCase().includes(q) || (m.animeName||'').toLowerCase().includes(q) || (m.category||'').toLowerCase().includes(q));
     }
+    // Category filter
+    const allCats = [...new Set(merch.map(m => m.category || '其他'))];
+    if (this.catFilter) merch = merch.filter(m => (m.category || '其他') === this.catFilter);
     // Sort
     if (this.sort === 'newest') merch.sort((a, b) => (b.createdAt||'').localeCompare(a.createdAt||''));
     else if (this.sort === 'price-desc') merch.sort((a, b) => (b.price||0) - (a.price||0));
@@ -42,8 +46,13 @@ App.merch = {
           <option value="name" ${this.sort==='name'?'selected':''}>名称</option>
         </select></div>
     </div>
+    ${allCats.length > 1 ? `<div class="merch-cat-tabs">
+      <button class="filter-tab ${!this.catFilter?'active':''}" data-catf="">全部分类</button>
+      ${allCats.map(c => `<button class="filter-tab ${this.catFilter===c?'active':''}" data-catf="${App.utils.escapeHtml(c)}">${App.utils.escapeHtml(c)}</button>`).join('')}
+    </div>` : ''}
     ${merch.length ? `<div class="merch-grid">${merch.map(m => this.merchCard(m, true)).join('')}</div>` : `<div class="empty-state"><h3>${this.tab==='wishlist'?'还没有愿望清单':'还没有周边'}</h3><p>在动漫详情页中添加你的周边收藏</p></div>`}
-    <div id="merch-detail-modal" class="modal hidden"></div>`;
+    <div id="merch-detail-modal" class="modal hidden"></div>
+    <div id="merch-edit-modal" class="modal hidden"></div>`;
   },
 
   merchCard(m, showAnime = false) {
@@ -96,9 +105,72 @@ App.merch = {
           <div class="info-row"><span>购买日期</span><span>${App.utils.formatDate(m.purchaseDate)}</span></div>`}
           ${m.notes ? `<div class="info-row full"><span>备注</span><p>${esc(m.notes)}</p></div>` : ''}
         </div>
-        <div class="modal-actions"><button class="btn btn-danger btn-sm" onclick="App.merch.deleteMerch('${m.id}')">删除</button>
-          <button class="btn btn-ghost" onclick="document.getElementById('merch-detail-modal').classList.add('hidden')">关闭</button></div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.merch.showEditModal('${m.id}')">编辑</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.merch.addPhotos('${m.id}')">追加照片</button>
+          <button class="btn btn-danger btn-sm" onclick="App.merch.deleteMerch('${m.id}')">删除</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('merch-detail-modal').classList.add('hidden')">关闭</button>
+        </div>
       </div>`;
+  },
+
+  async showEditModal(id) {
+    const merch = await App.db.getAllMerch();
+    const m = merch.find(x => x.id === id);
+    if (!m) return;
+    const esc = App.utils.escapeHtml;
+    document.getElementById('merch-detail-modal')?.classList.add('hidden');
+    let modal = document.getElementById('merch-edit-modal');
+    if (!modal) { modal = document.createElement('div'); modal.id = 'merch-edit-modal'; modal.className = 'modal'; document.body.appendChild(modal); }
+    modal.classList.remove('hidden');
+    modal.innerHTML = `<div class="modal-overlay" onclick="this.parentElement.classList.add('hidden')"></div>
+      <div class="modal-content"><h2>编辑周边</h2>
+        <form id="merch-edit-form">
+          <div class="form-group"><label>名称</label><input type="text" id="me-name" class="input" required value="${esc(m.name)}"/></div>
+          <div class="form-group"><label>分类</label><select id="me-cat" class="input">
+            ${['手办','挂件','服装','海报','光碟','书籍','其他'].map(c => `<option value="${c}" ${m.category===c?'selected':''}>${c}</option>`).join('')}
+          </select></div>
+          <div class="form-row">
+            <div class="form-group"><label>价格 (¥)</label><input type="number" id="me-price" class="input" step="0.01" value="${m.price||''}"/></div>
+            <div class="form-group"><label>当前市价 (¥)</label><input type="number" id="me-value" class="input" step="0.01" value="${m.currentValue||''}"/></div>
+          </div>
+          <div class="form-group"><label>备注</label><textarea id="me-notes" class="input" rows="2">${esc(m.notes||'')}</textarea></div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('merch-edit-modal').classList.add('hidden')">取消</button>
+            <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+        </form></div>`;
+    document.getElementById('merch-edit-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      await App.db.updateMerch(id, {
+        name: document.getElementById('me-name').value,
+        category: document.getElementById('me-cat').value,
+        price: document.getElementById('me-price').value || 0,
+        currentValue: document.getElementById('me-value').value || '',
+        notes: document.getElementById('me-notes').value,
+        isWishlist: m.isWishlist,
+        targetPrice: m.targetPrice || '',
+        tags: JSON.stringify(m.tags || []),
+      });
+      modal.classList.add('hidden');
+      App.toast('已保存', 'success');
+      App.router.refresh();
+    });
+  },
+
+  async addPhotos(merchId) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = async () => {
+      if (!input.files.length) return;
+      await App.db.addMerchPhotos(merchId, Array.from(input.files));
+      App.toast('照片已添加', 'success');
+      document.getElementById('merch-detail-modal')?.classList.add('hidden');
+      App.router.refresh();
+    };
+    input.click();
   },
 
   _carouselIdx: 0,
@@ -130,7 +202,11 @@ App.merch = {
       search.focus(); search.setSelectionRange(search.value.length, search.value.length);
     }
     document.querySelectorAll('[data-tab]').forEach(btn => {
-      btn.addEventListener('click', () => { this.tab = btn.dataset.tab; App.router.refresh(); });
+      btn.addEventListener('click', () => { this.tab = btn.dataset.tab; this.catFilter = ''; App.router.refresh(); });
+    });
+    // Category filter
+    document.querySelectorAll('[data-catf]').forEach(btn => {
+      btn.addEventListener('click', () => { this.catFilter = btn.dataset.catf; App.router.refresh(); });
     });
   }
 };

@@ -123,5 +123,20 @@ App.api = {
   async getTopAnime(page = 1) {
     const res = await this._fetch(`${this.base}/top/anime?page=${page}&limit=24`);
     return { ...res, data: this._withChineseTitles(res.data || []) };
+  },
+
+  async getSeasonNow(page = 1) {
+    const res = await this._fetch(`${this.base}/seasons/now?page=${page}&limit=24`);
+    return { ...res, data: this._withChineseTitles(res.data || []) };
+  },
+
+  async getRecommendations(malId) {
+    try {
+      const res = await this._fetch(`${this.base}/anime/${malId}/recommendations`);
+      return (res.data || []).slice(0, 6).map(r => {
+        const entry = r.entry || {};
+        return { ...entry, title_chinese: this.getChineseTitle(entry) };
+      });
+    } catch { return []; }
   }
 };
